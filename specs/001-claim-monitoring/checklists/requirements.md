@@ -33,4 +33,5 @@
 
 - Validation pass (2026-08-21): Stack choices (Next.js, Neon, Overpass, npm packages, endpoint tables) intentionally omitted — belong in `/speckit-plan`.
 - OSM OAuth, changeset provenance tags, and allowlisted sources are product/compliance constraints from the constitution, not framework choices.
-- Ready for `/speckit-clarify` (optional) or `/speckit-plan`.
+- Clarify session 2026-08-21: 5/5 questions integrated; checklist re-validated 16/16 still passing.
+- Ready for `/speckit-plan`.
