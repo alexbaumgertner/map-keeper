@@ -1,0 +1,23 @@
+{
+  "data_format": 1,
+  "project": {
+    "name": "Mapkeeper",
+    "description": "Claim and monitor business places on OpenStreetMap",
+    "project_url": "https://github.com/example/mapkeeper",
+    "doc_url": "https://wiki.openstreetmap.org/wiki/Mapkeeper",
+    "contact_name": "Mapkeeper maintainers",
+    "contact_email": "community@example.com"
+  },
+  "tags": [
+    { "key": "name", "description": "Business name" },
+    { "key": "amenity", "description": "Food & drink amenity type" },
+    { "key": "tourism", "description": "Accommodation type" },
+    { "key": "opening_hours", "description": "Opening hours" },
+    { "key": "phone", "description": "Phone" },
+    { "key": "website", "description": "Website" },
+    { "key": "cuisine", "description": "Cuisine" },
+    { "key": "check_date", "description": "Freshness confirmation date" },
+    { "key": "addr:street", "description": "Street" },
+    { "key": "addr:housenumber", "description": "House number" }
+  ]
+}

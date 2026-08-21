@@ -1,0 +1,21 @@
+{
+  "name": "mapkeeper",
+  "private": true,
+  "packageManager": "pnpm@9.15.0",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @mapkeeper/web dev",
+    "dev:sync": "pnpm --filter @mapkeeper/sync dev",
+    "build": "pnpm -r run build",
+    "lint": "pnpm -r run lint",
+    "db:generate": "pnpm --filter @mapkeeper/db generate",
+    "db:migrate": "pnpm --filter @mapkeeper/db migrate",
+    "typecheck": "pnpm -r run typecheck"
+  },
+  "devDependencies": {
+    "prettier": "^3.5.3",
+    "typescript": "^5.8.2"
+  }
+}

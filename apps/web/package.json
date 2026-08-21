@@ -1,0 +1,38 @@
+{
+  "name": "@mapkeeper/web",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --turbopack --hostname 127.0.0.1 --port 3000",
+    "build": "next build",
+    "start": "next start --hostname 127.0.0.1 --port 3000",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@mapkeeper/db": "file:../../packages/db",
+    "@mapkeeper/matching": "file:../../packages/matching",
+    "@mapkeeper/osm": "file:../../packages/osm",
+    "@mapkeeper/tagging": "file:../../packages/tagging",
+    "inngest": "^3.34.0",
+    "iron-session": "^8.0.4",
+    "maplibre-gl": "^5.2.0",
+    "next": "^15.5.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "resend": "^4.1.2",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3",
+    "@tailwindcss/postcss": "^4",
+    "@types/geojson": "^7946.0.16",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "^15.5.0",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}
