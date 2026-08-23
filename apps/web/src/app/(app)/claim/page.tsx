@@ -91,7 +91,11 @@ export default function ClaimPage() {
       }),
     });
     const data = await readJson(res);
-    setMessage(res.ok ? `Claimed ${data.displayName}. ${data.claimNote}` : data.error);
+    setMessage(
+      res.ok
+        ? `Claimed ${data.displayName ?? r.name ?? 'venue'}.${data.claimNote ? ` ${data.claimNote}` : ''}`
+        : (data.error ?? 'Claim failed'),
+    );
   }
 
   return (

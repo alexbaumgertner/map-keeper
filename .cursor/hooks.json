@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "hooks": {
+    "afterFileEdit": [
+      {
+        "command": ".cursor/hooks/lint-and-typecheck.mjs",
+        "timeout": 90
+      }
+    ],
+    "postToolUse": [
+      {
+        "command": ".cursor/hooks/lint-and-typecheck.mjs",
+        "matcher": "Write|StrReplace|EditNotebook",
+        "timeout": 15
+      }
+    ],
+    "stop": [
+      {
+        "command": ".cursor/hooks/lint-and-typecheck.mjs",
+        "timeout": 120,
+        "loop_limit": 3
+      }
+    ]
+  }
+}
