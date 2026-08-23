@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { searchVenues } from '@mapkeeper/osm';
 import { getSession } from '@/lib/auth/get-session';
-import { unauthorized, unprocessable } from '@/lib/api/errors';
+import { unauthorized, unprocessable, serviceUnavailable } from '@/lib/api/errors';
 
 export async function GET(req: NextRequest) {
   const session = await getSession();
@@ -17,6 +17,16 @@ export async function GET(req: NextRequest) {
     return unprocessable('q, lat, lon are required');
   }
 
-  const results = await searchVenues({ q, lat, lon, radiusM, limit });
-  return NextResponse.json({ results });
+  try {
+    const results = await searchVenues({ q, lat, lon, radiusM, limit });
+    return NextResponse.json({ results });
+  } catch (err) {
+    const raw = err instanceof Error ? err.message : 'Venue search failed';
+    const busy = /504|503|429|timed out|aborted/i.test(raw);
+    return serviceUnavailable(
+      busy
+        ? 'OpenStreetMap search is busy. Wait a few seconds and try again.'
+        : raw,
+    );
+  }
 }

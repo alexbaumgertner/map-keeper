@@ -42,7 +42,9 @@ export function MapView({ center = [-0.12, 51.5], onMove, drawEnabled = false }:
     }
     void drawEnabled; // points only — no polygon draw tools
     return () => map.remove();
-  }, [center, onMove, drawEnabled]);
+    // Recreate the map only when the initial center changes, not on every pan.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return <div ref={ref} className="h-[420px] w-full rounded-lg border border-stone-300" />;
 }

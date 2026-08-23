@@ -11,7 +11,7 @@ import { CandidateFields } from '@/components/editor/CandidateFields';
 import { FreshnessBanner } from '@/components/places/FreshnessBanner';
 
 export default function EditPlacePage() {
-  const params = useParams<{ id: string }>();
+  const { id } = useParams<{ id: string }>();
   const [state, setState] = useState<{
     business: { displayName: string; status: string; linkStatus: string };
     fields: Array<{ key: string; label: string; type: string }>;
@@ -22,7 +22,7 @@ export default function EditPlacePage() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    fetch(`/api/v1/businesses/${params.id}/editor-state`)
+    fetch(`/api/v1/businesses/${id}/editor-state`)
       .then(async (r) => {
         const d = await r.json();
         if (!r.ok) throw new Error(d.error ?? 'Cannot load editor');
@@ -30,7 +30,7 @@ export default function EditPlacePage() {
         setTags({ name: d.business.displayName });
       })
       .catch((e) => setError(e.message));
-  }, [params.id]);
+  }, [id]);
 
   if (error) {
     return (
@@ -44,9 +44,9 @@ export default function EditPlacePage() {
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-semibold">Edit {state.business.displayName}</h1>
-      <FreshnessBanner businessId={params.id} />
+      <FreshnessBanner businessId={id} />
       <PlaceSummary flags={state.flags} status={state.business.linkStatus} />
-      <CandidateFields businessId={params.id} />
+      <CandidateFields businessId={id} />
       {step === 'edit' && (
         <PlaceForm
           fields={state.fields}
