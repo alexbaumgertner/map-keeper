@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { searchVenues } from '@mapkeeper/osm/overpass';
 import { MapView } from '@/components/map/MapView';
 
 function Spinner({ className = 'h-4 w-4' }: { className?: string }) {
@@ -57,21 +58,40 @@ export default function ClaimPage() {
     }
   }
 
+  async function searchViaApi(): Promise<{ ok: boolean; results?: Result[]; error?: string }> {
+    const res = await fetch(
+      `/api/v1/discover/search?q=${encodeURIComponent(q)}&lat=${center.lat}&lon=${center.lon}`,
+    );
+    const data = await readJson(res);
+    if (!res.ok) return { ok: false, error: data.error ?? 'Search failed — sign in required' };
+    return { ok: true, results: data.results ?? [] };
+  }
+
   async function search() {
     setMessage('Searching OpenStreetMap…');
     setSearching(true);
     setResults([]);
     try {
-      const res = await fetch(
-        `/api/v1/discover/search?q=${encodeURIComponent(q)}&lat=${center.lat}&lon=${center.lon}`,
-      );
-      const data = await readJson(res);
-      if (!res.ok) {
-        setMessage(data.error ?? 'Search failed — sign in required');
+      const me = await fetch('/api/v1/auth/me');
+      if (me.status === 401) {
+        setMessage('Search failed — sign in required');
         return;
       }
-      setResults(data.results ?? []);
-      setMessage((data.results ?? []).length ? '' : 'No venues found near the map center.');
+      // Query Overpass from the browser. Vercel functions cannot TCP to overpass-api.de.
+      try {
+        const venues = await searchVenues({ q, lat: center.lat, lon: center.lon });
+        setResults(venues);
+        setMessage(venues.length ? '' : 'No venues found near the map center.');
+        return;
+      } catch {
+        const fallback = await searchViaApi();
+        if (!fallback.ok) {
+          setMessage(fallback.error ?? 'OpenStreetMap search is busy. Wait a few seconds and try again.');
+          return;
+        }
+        setResults(fallback.results ?? []);
+        setMessage((fallback.results ?? []).length ? '' : 'No venues found near the map center.');
+      }
     } finally {
       setSearching(false);
     }

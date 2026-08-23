@@ -1,5 +1,3 @@
-import { getOsmApiBase } from './oauth';
-
 export type OverpassResult = {
   osmType: 'node' | 'way' | 'relation';
   osmId: number;
@@ -9,12 +7,30 @@ export type OverpassResult = {
   tags: Record<string, string>;
 };
 
-const OVERPASS_ENDPOINTS = [
-  process.env.OVERPASS_URL,
+/**
+ * Browser: user's IP can reach overpass-api.de (same as local Next.js).
+ * Server/Vercel: AWS cannot TCP to gall/lambert (162.55.144.139, 65.109.112.52).
+ */
+const BROWSER_OVERPASS_ENDPOINTS = [
   'https://overpass-api.de/api/interpreter',
-  'https://overpass.kumi.systems/api/interpreter',
-  'https://overpass.private.coffee/api/interpreter',
-].filter((u, i, arr): u is string => Boolean(u) && arr.indexOf(u) === i);
+  'https://overpass.openstreetmap.fr/api/interpreter',
+  'https://maps.mail.ru/osm/tools/overpass/api/interpreter',
+];
+
+const SERVER_OVERPASS_ENDPOINTS = [
+  'https://overpass.openstreetmap.fr/api/interpreter',
+  'https://maps.mail.ru/osm/tools/overpass/api/interpreter',
+  'https://overpass-api.de/api/interpreter',
+];
+
+function overpassEndpoints(): string[] {
+  if (typeof window !== 'undefined') return [...BROWSER_OVERPASS_ENDPOINTS];
+  const custom = process.env.OVERPASS_URL?.trim();
+  const known = new Set([...BROWSER_OVERPASS_ENDPOINTS, ...SERVER_OVERPASS_ENDPOINTS]);
+  const urls = [...SERVER_OVERPASS_ENDPOINTS];
+  if (custom && !known.has(custom)) urls.unshift(custom);
+  return [...new Set(urls)];
+}
 
 const AMENITY_ALIASES: Record<string, string> = {
   cafe: 'cafe',
@@ -51,6 +67,18 @@ out center ${params.limit};
 `.trim();
 }
 
+function overpassHeaders(): Record<string, string> {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/x-www-form-urlencoded',
+  };
+  // Extra headers trigger a CORS preflight; browsers also forbid setting User-Agent.
+  if (typeof window === 'undefined') {
+    headers['User-Agent'] = 'Mapkeeper/0.1 (https://github.com/alexbaumgertner/map-keeper)';
+    headers.Accept = 'application/json';
+  }
+  return headers;
+}
+
 async function postOverpass(
   url: string,
   query: string,
@@ -58,18 +86,18 @@ async function postOverpass(
   try {
     const res = await fetch(url, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'User-Agent': 'Mapkeeper/0.1 (https://github.com/alexbaumgertner/map-keeper)',
-        Accept: 'application/json',
-      },
+      headers: overpassHeaders(),
       body: `data=${encodeURIComponent(query)}`,
+      cache: 'no-store',
       signal: AbortSignal.timeout(12_000),
     });
     if (res.ok) return { ok: true, json: await res.json() };
     const retry = [429, 502, 503, 504, 406].includes(res.status);
+    console.warn(`Overpass ${url} returned ${res.status}${retry ? ', trying next mirror' : ''}`);
     return { ok: false, retry, status: res.status };
-  } catch {
+  } catch (err) {
+    const reason = err instanceof Error ? err.message : 'network error';
+    console.warn(`Overpass ${url} failed (${reason}), trying next mirror`);
     return { ok: false, retry: true };
   }
 }
@@ -86,7 +114,7 @@ export async function searchVenues(params: {
   const query = buildQuery({ q: params.q, lat: params.lat, lon: params.lon, radius, limit });
 
   let lastStatus: number | undefined;
-  for (const endpoint of OVERPASS_ENDPOINTS) {
+  for (const endpoint of overpassEndpoints()) {
     const result = await postOverpass(endpoint, query);
     if (result.ok) {
       const data = result.json as {
@@ -120,5 +148,6 @@ export async function searchVenues(params: {
 
 /** Intentionally unused — discovery must not use editing API map extract. */
 export function forbiddenMapEndpoint(): string {
-  return `${getOsmApiBase()}/api/0.6/map`;
+  const base = process.env.OSM_API_BASE ?? 'https://master.apis.dev.openstreetmap.org';
+  return `${base}/api/0.6/map`;
 }
