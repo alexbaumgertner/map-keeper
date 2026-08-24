@@ -1,4 +1,18 @@
-import { pgEnum, pgTable, text, timestamp, uuid, bigint, integer, boolean, jsonb, numeric, date, uniqueIndex, index } from 'drizzle-orm/pg-core';
+import {
+  pgEnum,
+  pgTable,
+  text,
+  timestamp,
+  uuid,
+  bigint,
+  integer,
+  boolean,
+  jsonb,
+  numeric,
+  date,
+  uniqueIndex,
+  index,
+} from 'drizzle-orm/pg-core';
 
 export const attributeSourceEnum = pgEnum('attribute_source', [
   'owner',
@@ -52,7 +66,9 @@ export const verticalEnum = pgEnum('vertical', ['food_drink', 'accommodation', '
 export const ALLOWED_ATTRIBUTE_SOURCES = attributeSourceEnum.enumValues;
 export const FORBIDDEN_SOURCES = ['google'] as const;
 
-export function assertAllowlistedSource(source: string): asserts source is (typeof ALLOWED_ATTRIBUTE_SOURCES)[number] {
+export function assertAllowlistedSource(
+  source: string,
+): asserts source is (typeof ALLOWED_ATTRIBUTE_SOURCES)[number] {
   if ((FORBIDDEN_SOURCES as readonly string[]).includes(source)) {
     throw new Error(`Prohibited source: ${source}`);
   }
@@ -69,10 +85,12 @@ export const users = pgTable('users', {
   emailUsable: boolean('email_usable').notNull().default(false),
   accessToken: text('access_token'),
   refreshToken: text('refresh_token'),
-  notificationPrefs: jsonb('notification_prefs').$type<{ digest: boolean; freshness: boolean }>().default({
-    digest: true,
-    freshness: true,
-  }),
+  notificationPrefs: jsonb('notification_prefs')
+    .$type<{ digest: boolean; freshness: boolean }>()
+    .default({
+      digest: true,
+      freshness: true,
+    }),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 });

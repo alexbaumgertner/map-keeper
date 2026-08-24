@@ -12,6 +12,7 @@
     "lint": "pnpm -r run lint",
     "db:generate": "pnpm --filter @mapkeeper/db generate",
     "db:migrate": "pnpm --filter @mapkeeper/db migrate",
+    "db:setup:prod": "vercel env pull .env.migrate.local --environment production --yes && set -a && . ./.env.migrate.local && set +a && pnpm --filter @mapkeeper/db migrate; rm -f .env.migrate.local",
     "typecheck": "pnpm -r run typecheck"
   },
   "devDependencies": {
