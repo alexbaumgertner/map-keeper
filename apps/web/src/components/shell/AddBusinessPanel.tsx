@@ -80,8 +80,8 @@ export function AddBusinessPanel({ value, onChange, onClose, onNext, nextBusy }:
       </FlexRow>
 
       <FlexRow cx="w-full">
-        <TabButton caption="Housing" size="36" isLinkActive={value.category === 'housing'} onClick={() => setCategory('housing')} />
-        <TabButton caption="Food" size="36" isLinkActive={value.category === 'food'} onClick={() => setCategory('food')} />
+        <TabButton caption="Housing" size="36" isActive={value.category === 'housing'} onClick={() => setCategory('housing')} />
+        <TabButton caption="Food" size="36" isActive={value.category === 'food'} onClick={() => setCategory('food')} />
       </FlexRow>
 
       <LabeledInput label="Full name" info="E. g. Guest House Cozy Nest.">
