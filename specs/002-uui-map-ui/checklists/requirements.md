@@ -32,4 +32,5 @@
 ## Notes
 
 - Validation iteration 1 (2026-08-24): Pass. Stakeholder-mandated EPAM UUI Loveship is recorded under **Assumptions** (not as a framework leak in FRs/SCs). Aggregator “grab info” from Booking/Airbnb is explicitly out of scope per constitution Principles I/V.
-- Ready for `/speckit-clarify` (optional) or `/speckit-plan`.
+- Clarification session 2026-08-24: 5/5 questions answered (branding, signed-in chrome, URL field, close autosave, signed-out Add Business auth return). Spec remains checklist-complete.
+- Ready for `/speckit-plan`.
