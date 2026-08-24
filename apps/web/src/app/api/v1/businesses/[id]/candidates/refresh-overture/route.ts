@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getSession } from '@/lib/auth/get-session';
-import { unauthorized, forbidden } from '@/lib/api/errors';
-import { getMemoryStore, isMemoryDbMode } from '@/lib/db';
+import { requireOwnedPlace } from '@/lib/places/http';
 
 const OVERTURE_CONFIDENCE_GATE = 0.8;
 
@@ -9,11 +8,9 @@ type Ctx = { params: Promise<{ id: string }> };
 
 export async function POST(_req: Request, ctx: Ctx) {
   const session = await getSession();
-  if (!session.isLoggedIn || !session.userId) return unauthorized();
   const { id } = await ctx.params;
-  const b = isMemoryDbMode() ? getMemoryStore().businesses.get(id) : undefined;
-  if (!b) return NextResponse.json({ error: 'Not found' }, { status: 404 });
-  if (b.ownerUserId !== session.userId) return forbidden();
+  const result = await requireOwnedPlace(session, id);
+  if ('error' in result) return result.error;
 
   return NextResponse.json({
     candidates: [],

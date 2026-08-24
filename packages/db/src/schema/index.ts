@@ -1,4 +1,4 @@
-import { pgEnum, pgTable, text, timestamp, uuid, bigint, integer, boolean, jsonb, numeric, date, uniqueIndex } from 'drizzle-orm/pg-core';
+import { pgEnum, pgTable, text, timestamp, uuid, bigint, integer, boolean, jsonb, numeric, date, uniqueIndex, index } from 'drizzle-orm/pg-core';
 
 export const attributeSourceEnum = pgEnum('attribute_source', [
   'owner',
@@ -123,7 +123,7 @@ export const placeLinks = pgTable(
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
   },
-  (t) => [uniqueIndex('place_links_osm_idx').on(t.osmType, t.osmId)],
+  (t) => [index('place_links_osm_idx').on(t.osmType, t.osmId)],
 );
 
 export const attributes = pgTable(

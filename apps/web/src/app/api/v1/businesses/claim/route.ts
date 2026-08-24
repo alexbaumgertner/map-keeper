@@ -3,8 +3,9 @@ import { z } from 'zod';
 import { fetchElement, fetchPublicElement } from '@mapkeeper/osm';
 import { buildFingerprint } from '@mapkeeper/matching';
 import { getSession } from '@/lib/auth/get-session';
-import { unauthorized, unprocessable } from '@/lib/api/errors';
-import { getMemoryStore, isMemoryDbMode } from '@/lib/db';
+import { serviceUnavailable, unauthorized, unprocessable } from '@/lib/api/errors';
+import { isMemoryDbMode } from '@/lib/db';
+import { createClaimedPlace, persistSessionUser } from '@/lib/places/store';
 
 const claimSchema = z.object({
   osmType: z.enum(['node', 'way', 'relation']),
@@ -18,13 +19,23 @@ const claimSchema = z.object({
 
 export async function POST(req: NextRequest) {
   const session = await getSession();
-  if (!session.isLoggedIn || !session.userId) return unauthorized();
+  if (!session.isLoggedIn || !session.osmUserId) return unauthorized();
+  if (process.env.VERCEL && isMemoryDbMode()) {
+    return serviceUnavailable('DATABASE_URL is not configured');
+  }
 
   const parsed = claimSchema.safeParse(await req.json());
   if (!parsed.success) return unprocessable(parsed.error.message);
 
   try {
-    // Prefer sandbox object; Overpass IDs are usually on the public map, not the OSM dev API.
+    const ownerUserId = await persistSessionUser(session, {
+      osmUserId: session.osmUserId,
+      displayName: session.displayName ?? 'OSM user',
+      emailUsable: session.emailUsable ?? false,
+      accessToken: session.accessToken,
+    });
+    await session.save();
+
     let el =
       (await fetchElement(parsed.data.osmType, parsed.data.osmId, session.accessToken)) ??
       (await fetchPublicElement(parsed.data.osmType, parsed.data.osmId));
@@ -44,30 +55,20 @@ export async function POST(req: NextRequest) {
     }
 
     const tags = el.tags ?? {};
-    const fingerprint = buildFingerprint(tags);
-    const id = crypto.randomUUID();
-    const record = {
-      id,
-      ownerUserId: session.userId,
+    const saved = await createClaimedPlace(ownerUserId, {
       vertical: parsed.data.vertical,
-      status: 'published',
       displayName: tags.name || parsed.data.name || `${parsed.data.osmType}/${parsed.data.osmId}`,
       osmType: parsed.data.osmType,
       osmId: parsed.data.osmId,
       osmVersion: el.version,
       lat: el.lat ?? parsed.data.lat,
       lon: el.lon ?? parsed.data.lon,
-      fingerprint,
-      linkStatus: 'active' as const,
-    };
-
-    if (isMemoryDbMode()) {
-      getMemoryStore().businesses.set(id, record);
-    }
+      fingerprint: buildFingerprint(tags),
+    });
 
     return NextResponse.json(
       {
-        ...record,
+        ...saved,
         claimNote:
           'Claim is an internal watch link only. It confers no ownership or exclusivity on OpenStreetMap.',
       },

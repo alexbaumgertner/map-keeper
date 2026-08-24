@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { exchangeCode, fetchOsmUser } from '@mapkeeper/osm';
 import { getSession } from '@/lib/auth/get-session';
-import { getMemoryStore, isMemoryDbMode } from '@/lib/db';
+import { persistSessionUser } from '@/lib/places/store';
 
 export async function GET(req: NextRequest) {
   const code = req.nextUrl.searchParams.get('code');
@@ -20,24 +20,13 @@ export async function GET(req: NextRequest) {
   const emailUsable = Boolean(email);
 
   const session = await getSession();
-  const userId = crypto.randomUUID();
-
-  if (isMemoryDbMode()) {
-    const mem = getMemoryStore();
-    const existing = [...mem.users.values()].find((u) => u.osmUserId === osmUser.id);
-    const id = existing?.id ?? userId;
-    mem.users.set(id, {
-      id,
-      osmUserId: osmUser.id,
-      displayName: osmUser.display_name,
-      email,
-      emailUsable,
-      accessToken: token.access_token,
-    });
-    session.userId = id;
-  } else {
-    session.userId = userId;
-  }
+  await persistSessionUser(session, {
+    osmUserId: osmUser.id,
+    displayName: osmUser.display_name,
+    email,
+    emailUsable,
+    accessToken: token.access_token,
+  });
 
   session.osmUserId = osmUser.id;
   session.displayName = osmUser.display_name;

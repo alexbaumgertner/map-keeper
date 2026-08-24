@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getSession } from '@/lib/auth/get-session';
-import { unauthorized, forbidden, unprocessable } from '@/lib/api/errors';
-import { getMemoryStore, isMemoryDbMode } from '@/lib/db';
+import { unprocessable } from '@/lib/api/errors';
+import { requireOwnedPlace } from '@/lib/places/http';
+import { recordPlacePublish } from '@/lib/places/store';
 
 const schema = z.object({
   osmType: z.enum(['node', 'way', 'relation']),
@@ -16,22 +17,18 @@ type Ctx = { params: Promise<{ id: string }> };
 
 export async function POST(req: NextRequest, ctx: Ctx) {
   const session = await getSession();
-  if (!session.isLoggedIn || !session.userId) return unauthorized();
   const { id } = await ctx.params;
-  const mem = isMemoryDbMode() ? getMemoryStore() : null;
-  const b = mem?.businesses.get(id);
-  if (!b) return NextResponse.json({ error: 'Not found' }, { status: 404 });
-  if (b.ownerUserId !== session.userId) return forbidden();
+  const owned = await requireOwnedPlace(session, id);
+  if ('error' in owned) return owned.error;
 
   const body = schema.safeParse(await req.json());
   if (!body.success) return unprocessable(body.error.message);
 
-  b.osmType = body.data.osmType;
-  b.osmId = body.data.osmId;
-  b.osmVersion = body.data.osmVersion;
-  b.status = 'published';
-  b.linkStatus = 'active';
-  mem?.businesses.set(id, b);
-
-  return NextResponse.json({ ok: true, business: b });
+  const access = await recordPlacePublish(session.userId!, id, {
+    osmType: body.data.osmType,
+    osmId: body.data.osmId,
+    osmVersion: body.data.osmVersion,
+  });
+  if (!access.ok) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+  return NextResponse.json({ ok: true, business: access.place });
 }

@@ -2,18 +2,16 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { parseLocalBusinessJsonLd, assertNotProhibited } from '@mapkeeper/tagging';
 import { getSession } from '@/lib/auth/get-session';
-import { unauthorized, forbidden, unprocessable } from '@/lib/api/errors';
-import { getMemoryStore, isMemoryDbMode } from '@/lib/db';
+import { unprocessable } from '@/lib/api/errors';
+import { requireOwnedPlace } from '@/lib/places/http';
 
 type Ctx = { params: Promise<{ id: string }> };
 
 export async function POST(req: NextRequest, ctx: Ctx) {
   const session = await getSession();
-  if (!session.isLoggedIn || !session.userId) return unauthorized();
   const { id } = await ctx.params;
-  const b = isMemoryDbMode() ? getMemoryStore().businesses.get(id) : undefined;
-  if (!b) return NextResponse.json({ error: 'Not found' }, { status: 404 });
-  if (b.ownerUserId !== session.userId) return forbidden();
+  const owned = await requireOwnedPlace(session, id);
+  if ('error' in owned) return owned.error;
 
   const body = z.object({ url: z.string().url() }).safeParse(await req.json());
   if (!body.success) return unprocessable(body.error.message);
