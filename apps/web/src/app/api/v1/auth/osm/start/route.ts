@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { buildAuthorizeUrl, MINIMAL_SCOPES } from '@mapkeeper/osm';
 import { getSession } from '@/lib/auth/get-session';
 
+/**
+ * Starts OSM OAuth.
+ * Query `redirect` — path after callback (e.g. `/places/new` for signed-out Add Business).
+ * Sign Up, Login, and Add Business (signed out) all use this endpoint.
+ */
 export async function GET(req: NextRequest) {
   const clientId = process.env.OSM_OAUTH_CLIENT_ID;
   const redirectUri =
@@ -18,7 +23,6 @@ export async function GET(req: NextRequest) {
   const redirect = req.nextUrl.searchParams.get('redirect') ?? '/places';
   const state = Buffer.from(JSON.stringify({ redirect, n: crypto.randomUUID() })).toString('base64url');
   const session = await getSession();
-  // stash state in cookie via session fields if needed later
   void session;
   const url = buildAuthorizeUrl({
     clientId,

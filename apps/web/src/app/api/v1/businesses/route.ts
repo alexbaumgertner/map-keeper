@@ -1,16 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { z } from 'zod';
 import { getSession } from '@/lib/auth/get-session';
-import { serviceUnavailable, unauthorized, unprocessable } from '@/lib/api/errors';
+import { serviceUnavailable, unauthorized } from '@/lib/api/errors';
 import { isMemoryDbMode } from '@/lib/db';
+import { parseDraftBody } from '@/lib/places/draft-body';
 import { createDraftPlace, listOwnedPlaces, persistSessionUser } from '@/lib/places/store';
-
-const createSchema = z.object({
-  vertical: z.enum(['food_drink', 'accommodation', 'other']).default('other'),
-  displayName: z.string().min(1),
-  lat: z.number(),
-  lon: z.number(),
-});
 
 async function ensureUser() {
   const session = await getSession();
@@ -47,11 +40,12 @@ export async function POST(req: NextRequest) {
   const auth = await ensureUser();
   if ('error' in auth) return auth.error;
 
-  const body = createSchema.safeParse(await req.json());
-  if (!body.success) return unprocessable(body.error.message);
+  const parsed = parseDraftBody(await req.json());
+  if (!parsed.ok) return parsed.error;
 
   try {
-    const record = await createDraftPlace(auth.session.userId!, body.data);
+    // externalPageUrl is stored as text only — never fetched/scraped
+    const record = await createDraftPlace(auth.session.userId!, parsed.data);
     return NextResponse.json(record, { status: 201 });
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Could not create draft';

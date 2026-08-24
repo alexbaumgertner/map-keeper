@@ -1,38 +1,87 @@
-import Link from 'next/link';
+'use client';
+
+import { useEffect, useRef, useState } from 'react';
+import { MapView, type MapApi } from '@/components/map/MapView';
+import { MapChrome } from '@/components/shell/MapChrome';
+import { StartHomePanel } from '@/components/shell/StartHomePanel';
+
+type Me = { isLoggedIn?: boolean; displayName?: string };
 
 export default function Home() {
+  const mapApiRef = useRef<MapApi | null>(null);
+  const [me, setMe] = useState<Me>({ isLoggedIn: false });
+  const [flyTo, setFlyTo] = useState<{ lng: number; lat: number; zoom?: number } | null>(null);
+  const [mapMsg, setMapMsg] = useState<string | null>(null);
+
+  useEffect(() => {
+    void fetch('/api/v1/auth/me')
+      .then(async (r) => {
+        if (!r.ok) {
+          setMe({ isLoggedIn: false });
+          return;
+        }
+        const data = (await r.json()) as Me;
+        setMe({ isLoggedIn: true, displayName: data.displayName });
+      })
+      .catch(() => setMe({ isLoggedIn: false }));
+  }, []);
+
+  function goAuth(redirect: string) {
+    window.location.href = `/api/v1/auth/osm/start?redirect=${encodeURIComponent(redirect)}`;
+  }
+
+  async function logout() {
+    await fetch('/api/v1/auth/logout', { method: 'POST' });
+    setMe({ isLoggedIn: false });
+  }
+
   return (
-    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-stone-100 via-emerald-50 to-sky-100">
-      <div
-        className="pointer-events-none absolute inset-0 opacity-40"
-        style={{
-          backgroundImage:
-            'radial-gradient(circle at 20% 20%, rgba(6,95,70,0.15), transparent 40%), radial-gradient(circle at 80% 60%, rgba(12,74,110,0.12), transparent 35%)',
-        }}
-      />
-      <main className="relative mx-auto flex min-h-screen max-w-3xl flex-col justify-center px-6 py-16">
-        <p className="font-[family-name:var(--font-display)] text-5xl font-semibold tracking-tight text-emerald-950 sm:text-6xl">
-          Mapkeeper
-        </p>
-        <h1 className="mt-4 max-w-xl text-xl text-stone-800 sm:text-2xl">
-          Keep your business on the map.
-        </h1>
-        <p className="mt-3 max-w-lg text-stone-600">
-          Claim your venue on OpenStreetMap, publish corrections under your own account, and get
-          notified when the map changes — compliance as a service, not a bulk editor.
-        </p>
-        <div className="mt-8 flex flex-wrap gap-3">
-          <Link
-            href="/api/v1/auth/osm/start?redirect=/claim"
-            className="rounded bg-emerald-900 px-5 py-2.5 text-white"
-          >
-            Sign in with OpenStreetMap
-          </Link>
-          <Link href="/en/guides/organic-maps/restaurant" className="rounded border border-emerald-900 px-5 py-2.5 text-emerald-950">
-            Read a guide
-          </Link>
-        </div>
-      </main>
+    <div className="flex h-[100dvh] w-full flex-col md:flex-row">
+      <div className="h-auto max-h-[45vh] w-full shrink-0 md:h-full md:max-h-none md:w-[400px]">
+        <StartHomePanel
+          isLoggedIn={Boolean(me.isLoggedIn)}
+          displayName={me.displayName}
+          onAddBusiness={() => {
+            if (me.isLoggedIn) {
+              window.location.href = '/places/new';
+            } else {
+              goAuth('/places/new');
+            }
+          }}
+          onSignUp={() => goAuth('/')}
+          onLogin={() => goAuth('/')}
+          onLogout={() => void logout()}
+        />
+      </div>
+      <div className="relative min-h-0 min-w-0 flex-1">
+        <MapView
+          className="h-full w-full"
+          mapApiRef={mapApiRef}
+          flyToRequest={flyTo}
+        />
+        <MapChrome
+          message={mapMsg}
+          onSearchResult={(r) => {
+            setMapMsg(null);
+            setFlyTo({ lng: r.lon, lat: r.lat, zoom: 12 });
+          }}
+          onZoomIn={() => mapApiRef.current?.zoomIn()}
+          onZoomOut={() => mapApiRef.current?.zoomOut()}
+          onLocate={() => {
+            if (!navigator.geolocation) {
+              setMapMsg('Geolocation is not available in this browser.');
+              return;
+            }
+            navigator.geolocation.getCurrentPosition(
+              (pos) => {
+                setMapMsg(null);
+                setFlyTo({ lng: pos.coords.longitude, lat: pos.coords.latitude, zoom: 14 });
+              },
+              () => setMapMsg('Could not get your location. Check browser permissions.'),
+            );
+          }}
+        />
+      </div>
     </div>
   );
 }

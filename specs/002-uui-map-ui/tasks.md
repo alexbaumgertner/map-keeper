@@ -29,10 +29,10 @@ description: "Task list for Map UI from Figma (UUI) implementation"
 
 **Purpose**: EPAM UUI Loveship + UI folder layout for Map Watcher screens
 
-- [ ] T001 Add EPAM UUI packages `@epam/uui-core`, `@epam/uui-components`, `@epam/uui`, `@epam/loveship` (matched versions) to `apps/web/package.json` and install via workspace
-- [ ] T002 Import UUI/Loveship styles and set `uui-theme-loveship` on `<body>` in `apps/web/src/app/layout.tsx` (and/or `apps/web/src/app/globals.css` as needed)
-- [ ] T003 [P] Create UI shell folders `apps/web/src/components/shell/` and `apps/web/src/components/uui/` per `plan.md`
-- [ ] T004 [P] Add curated Housing/Food business-type option lists in `apps/web/src/lib/places/business-types.ts`
+- [x] T001 Add EPAM UUI packages `@epam/uui-core`, `@epam/uui-components`, `@epam/uui`, `@epam/loveship` (matched versions) to `apps/web/package.json` and install via workspace
+- [x] T002 Import UUI/Loveship styles and set `uui-theme-loveship` on `<body>` in `apps/web/src/app/layout.tsx` (and/or `apps/web/src/app/globals.css` as needed)
+- [x] T003 [P] Create UI shell folders `apps/web/src/components/shell/` and `apps/web/src/components/uui/` per `plan.md`
+- [x] T004 [P] Add curated Housing/Food business-type option lists in `apps/web/src/lib/places/business-types.ts`
 
 ---
 
@@ -42,12 +42,12 @@ description: "Task list for Map UI from Figma (UUI) implementation"
 
 **⚠️ CRITICAL**: No user story work begins until this phase is complete
 
-- [ ] T005 Extend MapLibre `MapView` for full-bleed layout, map click → lng/lat callback, single movable pin marker, and optional hide of default NavigationControl in `apps/web/src/components/map/MapView.tsx`
-- [ ] T006 [P] Extend `insertDraftPlace` / watched-place types for optional `lat`/`lon`, `properName`, `businessType`, `externalPageUrl`, and incomplete drafts in `packages/db/src/queries.ts` (and exports in `packages/db/src/index.ts`)
-- [ ] T007 [P] Extend memory + DB draft helpers for incomplete create/update and attribute keys (`name`, `business_type`, `external_page_url`, source `owner` only) in `apps/web/src/lib/places/store.ts`
-- [ ] T008 Extend `POST /api/v1/businesses` for incomplete vs `complete=true` Zod body per `contracts/api.md` in `apps/web/src/app/api/v1/businesses/route.ts`
-- [ ] T009 Implement `PATCH /api/v1/businesses/[id]` for owned draft updates (same fields as POST) in `apps/web/src/app/api/v1/businesses/[id]/route.ts`
-- [ ] T010 [P] Confirm OAuth start accepts `redirect=/places/new` and document usage in `apps/web/src/app/api/v1/auth/osm/start/route.ts` (callback already restores path in `apps/web/src/app/api/v1/auth/osm/callback/route.ts`)
+- [x] T005 Extend MapLibre `MapView` for full-bleed layout, map click → lng/lat callback, single movable pin marker, and optional hide of default NavigationControl in `apps/web/src/components/map/MapView.tsx`
+- [x] T006 [P] Extend `insertDraftPlace` / watched-place types for optional `lat`/`lon`, `properName`, `businessType`, `externalPageUrl`, and incomplete drafts in `packages/db/src/queries.ts` (and exports in `packages/db/src/index.ts`)
+- [x] T007 [P] Extend memory + DB draft helpers for incomplete create/update and attribute keys (`name`, `business_type`, `external_page_url`, source `owner` only) in `apps/web/src/lib/places/store.ts`
+- [x] T008 Extend `POST /api/v1/businesses` for incomplete vs `complete=true` Zod body per `contracts/api.md` in `apps/web/src/app/api/v1/businesses/route.ts`
+- [x] T009 Implement `PATCH /api/v1/businesses/[id]` for owned draft updates (same fields as POST) in `apps/web/src/app/api/v1/businesses/[id]/route.ts`
+- [x] T010 [P] Confirm OAuth start accepts `redirect=/places/new` and document usage in `apps/web/src/app/api/v1/auth/osm/start/route.ts` (callback already restores path in `apps/web/src/app/api/v1/auth/osm/callback/route.ts`)
 
 **Checkpoint**: Draft POST/PATCH accept partial payloads; MapView supports pin + click; OAuth can return to `/places/new`
 
@@ -61,11 +61,11 @@ description: "Task list for Map UI from Figma (UUI) implementation"
 
 ### Implementation for User Story 1
 
-- [ ] T011 [P] [US1] Build `StartHomePanel` (title Map Watcher, Add Business accent + multi-map copy, auth row) with UUI Loveship in `apps/web/src/components/shell/StartHomePanel.tsx`
-- [ ] T012 [P] [US1] Build map overlay chrome (search TextInput shell + zoom/locate IconButtons) in `apps/web/src/components/shell/MapChrome.tsx`
-- [ ] T013 [US1] Replace marketing landing with two-pane Start Screen composing panel + MapView + MapChrome in `apps/web/src/app/page.tsx`
-- [ ] T014 [US1] Wire signed-out Sign Up/Login and Add Business to `/api/v1/auth/osm/start?redirect=…` and signed-in state via `/api/v1/auth/me` + logout in `apps/web/src/app/page.tsx` / `StartHomePanel.tsx`
-- [ ] T015 [US1] Ensure signed-out Add Business uses `redirect=/places/new` so callback returns to Add Business per FR-014 in `apps/web/src/components/shell/StartHomePanel.tsx`
+- [x] T011 [P] [US1] Build `StartHomePanel` (title Map Watcher, Add Business accent + multi-map copy, auth row) with UUI Loveship in `apps/web/src/components/shell/StartHomePanel.tsx`
+- [x] T012 [P] [US1] Build map overlay chrome (search TextInput shell + zoom/locate IconButtons) in `apps/web/src/components/shell/MapChrome.tsx`
+- [x] T013 [US1] Replace marketing landing with two-pane Start Screen composing panel + MapView + MapChrome in `apps/web/src/app/page.tsx`
+- [x] T014 [US1] Wire signed-out Sign Up/Login and Add Business to `/api/v1/auth/osm/start?redirect=…` and signed-in state via `/api/v1/auth/me` + logout in `apps/web/src/app/page.tsx` / `StartHomePanel.tsx`
+- [x] T015 [US1] Ensure signed-out Add Business uses `redirect=/places/new` so callback returns to Add Business per FR-014 in `apps/web/src/components/shell/StartHomePanel.tsx`
 
 **Checkpoint**: US1 demoable against Figma `15:2375` and quickstart scenarios 1–3 (auth return may land on stub `/places/new` until US2)
 
@@ -79,11 +79,11 @@ description: "Task list for Map UI from Figma (UUI) implementation"
 
 ### Implementation for User Story 2
 
-- [ ] T016 [P] [US2] Build `AddBusinessPanel` (title, close, Housing/Food tabs, full name, proper name, business type, location prompt, external URL, Next disabled) with UUI in `apps/web/src/components/shell/AddBusinessPanel.tsx`
-- [ ] T017 [US2] Rewrite Add Business page as two-pane shell (panel + map) without requiring pin yet in `apps/web/src/app/(app)/places/new/page.tsx`
-- [ ] T018 [US2] Implement dirty close → incomplete `POST`/`PATCH` then navigate home; empty close without write in `apps/web/src/app/(app)/places/new/page.tsx`
-- [ ] T019 [US2] Prefill form from `?draft=<id>` via `GET /api/v1/businesses/[id]` for resume in `apps/web/src/app/(app)/places/new/page.tsx`
-- [ ] T020 [US2] Map Housing→`accommodation` and Food→`food_drink`; refresh type options from `apps/web/src/lib/places/business-types.ts` in `AddBusinessPanel.tsx`
+- [x] T016 [P] [US2] Build `AddBusinessPanel` (title, close, Housing/Food tabs, full name, proper name, business type, location prompt, external URL, Next disabled) with UUI in `apps/web/src/components/shell/AddBusinessPanel.tsx`
+- [x] T017 [US2] Rewrite Add Business page as two-pane shell (panel + map) without requiring pin yet in `apps/web/src/app/(app)/places/new/page.tsx`
+- [x] T018 [US2] Implement dirty close → incomplete `POST`/`PATCH` then navigate home; empty close without write in `apps/web/src/app/(app)/places/new/page.tsx`
+- [x] T019 [US2] Prefill form from `?draft=<id>` via `GET /api/v1/businesses/[id]` for resume in `apps/web/src/app/(app)/places/new/page.tsx`
+- [x] T020 [US2] Map Housing→`accommodation` and Food→`food_drink`; refresh type options from `apps/web/src/lib/places/business-types.ts` in `AddBusinessPanel.tsx`
 
 **Checkpoint**: US2 independently demoable (Figma `3:2`); quickstart scenario 4
 
@@ -97,10 +97,10 @@ description: "Task list for Map UI from Figma (UUI) implementation"
 
 ### Implementation for User Story 3
 
-- [ ] T021 [US3] Wire map click / pin move to Location coordinates display and form state in `apps/web/src/app/(app)/places/new/page.tsx` and `MapView.tsx`
-- [ ] T022 [US3] Enable Next only when full name, proper name, business type, and lat/lon present; accent styling via UUI in `apps/web/src/components/shell/AddBusinessPanel.tsx`
-- [ ] T023 [US3] On Next, `POST`/`PATCH` with `complete=true` (store `externalPageUrl` if set, never fetch) then navigate to `/places/[id]/edit` in `apps/web/src/app/(app)/places/new/page.tsx`
-- [ ] T024 [US3] Assert no scraper/fetch path exists for `externalPageUrl` (keep store/API write-only) in `apps/web/src/lib/places/store.ts` and `apps/web/src/app/api/v1/businesses/route.ts`
+- [x] T021 [US3] Wire map click / pin move to Location coordinates display and form state in `apps/web/src/app/(app)/places/new/page.tsx` and `MapView.tsx`
+- [x] T022 [US3] Enable Next only when full name, proper name, business type, and lat/lon present; accent styling via UUI in `apps/web/src/components/shell/AddBusinessPanel.tsx`
+- [x] T023 [US3] On Next, `POST`/`PATCH` with `complete=true` (store `externalPageUrl` if set, never fetch) then navigate to `/places/[id]/edit` in `apps/web/src/app/(app)/places/new/page.tsx`
+- [x] T024 [US3] Assert no scraper/fetch path exists for `externalPageUrl` (keep store/API write-only) in `apps/web/src/lib/places/store.ts` and `apps/web/src/app/api/v1/businesses/route.ts`
 
 **Checkpoint**: US3 independently demoable (Figma `13:215`); quickstart scenario 5
 
@@ -114,11 +114,11 @@ description: "Task list for Map UI from Figma (UUI) implementation"
 
 ### Implementation for User Story 4
 
-- [ ] T025 [P] [US4] Implement Photon + coordinate-parse geocode helper in `apps/web/src/lib/geo/photon.ts` (or `packages/osm` if preferred for reuse)
-- [ ] T026 [US4] Add `GET /api/v1/geo/search` route per `contracts/api.md` in `apps/web/src/app/api/v1/geo/search/route.ts`
-- [ ] T027 [US4] Wire MapChrome search to geo API and `flyTo` on MapView in `apps/web/src/components/shell/MapChrome.tsx` and `apps/web/src/components/map/MapView.tsx`
-- [ ] T028 [US4] Wire zoom in/out and browser geolocation (locate) with soft error messaging in `apps/web/src/components/shell/MapChrome.tsx` and `MapView.tsx`
-- [ ] T029 [US4] Reuse MapChrome on both Start (`apps/web/src/app/page.tsx`) and Add Business (`apps/web/src/app/(app)/places/new/page.tsx`)
+- [x] T025 [P] [US4] Implement Photon + coordinate-parse geocode helper in `apps/web/src/lib/geo/photon.ts` (or `packages/osm` if preferred for reuse)
+- [x] T026 [US4] Add `GET /api/v1/geo/search` route per `contracts/api.md` in `apps/web/src/app/api/v1/geo/search/route.ts`
+- [x] T027 [US4] Wire MapChrome search to geo API and `flyTo` on MapView in `apps/web/src/components/shell/MapChrome.tsx` and `apps/web/src/components/map/MapView.tsx`
+- [x] T028 [US4] Wire zoom in/out and browser geolocation (locate) with soft error messaging in `apps/web/src/components/shell/MapChrome.tsx` and `MapView.tsx`
+- [x] T029 [US4] Reuse MapChrome on both Start (`apps/web/src/app/page.tsx`) and Add Business (`apps/web/src/app/(app)/places/new/page.tsx`)
 
 **Checkpoint**: US4 independently demoable; quickstart scenario 6
 
@@ -128,10 +128,10 @@ description: "Task list for Map UI from Figma (UUI) implementation"
 
 **Purpose**: Visual parity, responsive best-effort, validation pass
 
-- [ ] T030 [P] Tune spacing/typography to Figma density on Start and Add Business panels in `apps/web/src/components/shell/StartHomePanel.tsx` and `AddBusinessPanel.tsx`
-- [ ] T031 [P] Best-effort narrow viewport stacking (panel above map) without breaking pin placement in `apps/web/src/app/page.tsx` and `apps/web/src/app/(app)/places/new/page.tsx`
-- [ ] T032 Run through `specs/002-uui-map-ui/quickstart.md` scenarios 1–6 and fix gaps
-- [ ] T033 [P] Confirm network tab: no public Nominatim; no fetch to Booking/Airbnb URLs on Next/close in a manual check noted in `specs/002-uui-map-ui/quickstart-results.md`
+- [x] T030 [P] Tune spacing/typography to Figma density on Start and Add Business panels in `apps/web/src/components/shell/StartHomePanel.tsx` and `AddBusinessPanel.tsx`
+- [x] T031 [P] Best-effort narrow viewport stacking (panel above map) without breaking pin placement in `apps/web/src/app/page.tsx` and `apps/web/src/app/(app)/places/new/page.tsx`
+- [x] T032 Run through `specs/002-uui-map-ui/quickstart.md` scenarios 1–6 and fix gaps
+- [x] T033 [P] Confirm network tab: no public Nominatim; no fetch to Booking/Airbnb URLs on Next/close in a manual check noted in `specs/002-uui-map-ui/quickstart-results.md`
 
 ---
 

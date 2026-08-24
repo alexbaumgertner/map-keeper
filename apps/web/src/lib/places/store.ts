@@ -5,8 +5,10 @@ import {
   insertDraftPlace,
   listWatchedPlaces,
   recordPublishedPlace,
+  updateDraftPlace,
   upsertUser,
   type ApiVertical,
+  type DraftPlaceInput,
   type WatchedPlace,
 } from '@mapkeeper/db';
 import { getDb, getMemoryStore, isMemoryDbMode } from '@/lib/db';
@@ -19,6 +21,16 @@ type SessionWithSave = SessionData & { save: () => Promise<void> };
 export type PlaceAccess =
   | { ok: true; place: WatchedPlace }
   | { ok: false; status: 403 | 404 };
+
+export type DraftFields = {
+  vertical?: ApiVertical;
+  displayName?: string;
+  properName?: string;
+  businessType?: string;
+  externalPageUrl?: string;
+  lat?: number;
+  lon?: number;
+};
 
 export async function persistSessionUser(
   session: SessionWithSave,
@@ -74,18 +86,27 @@ export async function lookupOwnedPlace(ownerUserId: string, id: string): Promise
   return { ok: true, place };
 }
 
+function memoryDraftName(input: DraftFields): string {
+  const name = input.displayName?.trim() || input.properName?.trim();
+  return name && name.length > 0 ? name : 'Untitled draft';
+}
+
+/** Create local draft only — never fetches externalPageUrl (no scraper). */
 export async function createDraftPlace(
   ownerUserId: string,
-  input: { vertical: ApiVertical; displayName: string; lat: number; lon: number },
+  input: DraftFields,
 ): Promise<WatchedPlace> {
   if (isMemoryDbMode()) {
     const id = crypto.randomUUID();
     const record: WatchedPlace = {
       id,
       ownerUserId,
-      vertical: input.vertical,
+      vertical: input.vertical ?? 'accommodation',
       status: 'draft',
-      displayName: input.displayName,
+      displayName: memoryDraftName(input),
+      properName: input.properName,
+      businessType: input.businessType,
+      externalPageUrl: input.externalPageUrl,
       lat: input.lat,
       lon: input.lon,
       linkStatus: 'draft',
@@ -93,7 +114,53 @@ export async function createDraftPlace(
     getMemoryStore().businesses.set(id, record);
     return record;
   }
-  return insertDraftPlace(getDb(), { ownerUserId, ...input });
+  const payload: DraftPlaceInput = {
+    ownerUserId,
+    vertical: input.vertical,
+    displayName: input.displayName,
+    properName: input.properName,
+    businessType: input.businessType,
+    externalPageUrl: input.externalPageUrl,
+    lat: input.lat,
+    lon: input.lon,
+  };
+  return insertDraftPlace(getDb(), payload);
+}
+
+/** Update owned draft — stores externalPageUrl as text only; never HTTP-fetches it. */
+export async function patchDraftPlace(
+  ownerUserId: string,
+  id: string,
+  input: DraftFields,
+): Promise<PlaceAccess> {
+  const access = await lookupOwnedPlace(ownerUserId, id);
+  if (!access.ok) return access;
+
+  if (isMemoryDbMode()) {
+    const next: WatchedPlace = {
+      ...access.place,
+      vertical: input.vertical ?? access.place.vertical,
+      displayName:
+        input.displayName !== undefined || input.properName !== undefined
+          ? memoryDraftName({
+              displayName: input.displayName ?? access.place.displayName,
+              properName: input.properName ?? access.place.properName,
+            })
+          : access.place.displayName,
+      properName: input.properName !== undefined ? input.properName : access.place.properName,
+      businessType: input.businessType !== undefined ? input.businessType : access.place.businessType,
+      externalPageUrl:
+        input.externalPageUrl !== undefined ? input.externalPageUrl : access.place.externalPageUrl,
+      lat: input.lat !== undefined ? input.lat : access.place.lat,
+      lon: input.lon !== undefined ? input.lon : access.place.lon,
+    };
+    getMemoryStore().businesses.set(id, next);
+    return { ok: true, place: next };
+  }
+
+  const place = await updateDraftPlace(getDb(), id, input);
+  if (!place) return { ok: false, status: 404 };
+  return { ok: true, place };
 }
 
 export async function createClaimedPlace(
