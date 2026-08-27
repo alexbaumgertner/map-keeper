@@ -5,3 +5,5 @@ export * from './overpass';
 export * from './publish';
 export * from './merge';
 export * from './notes';
+export * from './identity';
+export * from './claim-resolve';

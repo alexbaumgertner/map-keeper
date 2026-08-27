@@ -298,7 +298,7 @@ Check:
 
 1. `https://<domain>/` loads.
 2. Sign-in with OSM completes and returns to `/claim` or `/places`.
-3. Claim/search works (Overpass + DB).
+3. Claim/search works (Overpass + DB). On `/claim`, use **Claim by map object id** for sandbox/test objects (`resolveMode=editing_host` via `GET /api/v1/osm/lookup` then claim). Name search stays the primary path.
 4. Inngest dashboard shows the app connected.
 5. Resend test/digest path does not error when OSM email is present.
 
@@ -307,6 +307,7 @@ Check:
 - Env template: `.env.example`
 - Full local var list and OSM notes: this README (Dev requirements)
 - Spec / contracts: `specs/001-claim-monitoring/`
+- Claim by OSM id: `specs/003-claim-by-osm-id/`
 
 ## Constitution
 
@@ -314,4 +315,4 @@ Non-negotiables live in `.specify/memory/constitution.md` (allowlisted sources, 
 
 ## Spec Kit
 
-Feature: `specs/001-claim-monitoring/`
+Feature: `specs/001-claim-monitoring/` · Claim-by-id: `specs/003-claim-by-osm-id/`

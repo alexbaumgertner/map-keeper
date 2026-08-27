@@ -9,13 +9,15 @@
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "lint": "echo ok"
+    "lint": "echo ok",
+    "test": "vitest run"
   },
   "dependencies": {
     "zod": "^3.24.2"
   },
   "devDependencies": {
     "@types/node": "^20",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^3.2.7"
   }
 }

@@ -175,12 +175,12 @@ export async function createClaimedPlace(
     lon?: number;
     fingerprint?: WatchedPlace['fingerprint'];
   },
-): Promise<WatchedPlace> {
+): Promise<{ place: WatchedPlace; alreadyWatched: boolean }> {
   if (isMemoryDbMode()) {
     const existing = [...getMemoryStore().businesses.values()].find(
       (b) => b.ownerUserId === ownerUserId && b.osmType === input.osmType && b.osmId === input.osmId,
     );
-    if (existing) return existing;
+    if (existing) return { place: existing, alreadyWatched: true };
     const id = crypto.randomUUID();
     const record: WatchedPlace = {
       id,
@@ -197,12 +197,13 @@ export async function createClaimedPlace(
       linkStatus: 'active',
     };
     getMemoryStore().businesses.set(id, record);
-    return record;
+    return { place: record, alreadyWatched: false };
   }
 
   const existing = await findClaimedPlace(getDb(), ownerUserId, input.osmType, input.osmId);
-  if (existing) return existing;
-  return insertClaimedPlace(getDb(), { ownerUserId, ...input });
+  if (existing) return { place: existing, alreadyWatched: true };
+  const place = await insertClaimedPlace(getDb(), { ownerUserId, ...input });
+  return { place, alreadyWatched: false };
 }
 
 export async function recordPlacePublish(
