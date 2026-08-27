@@ -10,6 +10,10 @@ export type OsmElement = {
   tags?: Record<string, string>;
   changeset?: number;
   user?: string;
+  /** Present on ways when fetched as a single element. */
+  nodes?: number[];
+  /** Present on relations when fetched as a single element. */
+  members?: Array<{ type: 'node' | 'way' | 'relation'; ref: number; role: string }>;
 };
 
 export async function fetchElements(
@@ -30,7 +34,7 @@ export async function fetchElements(
   };
   if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
   const res = await fetch(url, { headers });
-  if (res.status === 404) return [];
+  if (res.status === 404 || res.status === 410) return [];
   if (!res.ok) throw new Error(`OSM fetch failed: ${res.status}`);
   const data = (await res.json()) as { elements?: OsmElement[] };
   return data.elements ?? [];
@@ -42,9 +46,18 @@ export async function fetchElement(
   accessToken?: string,
   apiBase = getOsmApiBase(),
 ): Promise<OsmElement | null> {
-  const plural = `${type}s` as 'nodes' | 'ways' | 'relations';
-  const els = await fetchElements(plural, [id], accessToken, apiBase);
-  return els[0] ?? null;
+  // Prefer single-object endpoint so ways/relations include nodes/members.
+  const url = `${apiBase}/api/0.6/${type}/${id}.json`;
+  const headers: HeadersInit = {
+    Accept: 'application/json',
+    'User-Agent': 'Mapkeeper/0.1 (https://github.com/alexbaumgertner/map-keeper)',
+  };
+  if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
+  const res = await fetch(url, { headers });
+  if (res.status === 404 || res.status === 410) return null;
+  if (!res.ok) throw new Error(`OSM fetch failed: ${res.status}`);
+  const data = (await res.json()) as { elements?: OsmElement[] };
+  return data.elements?.[0] ?? null;
 }
 
 /** Read-only lookup on the public OSM API (Overpass IDs live here, not on the sandbox). */
